@@ -49,12 +49,14 @@ async def main():
             self.image.set_colorkey(BLACK)
             self.rect = self.image.get_rect()
             self.radius = 20
-        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
+            # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
             self.rect.centerx = WIDTH / 2       
             self.rect.bottom = HEIGHT - 10
             self.speedx = 0
             self.speedy = 0
-            
+            self.shoot_delay = 250  # milliseconds between shots
+            self.last_shoot = 0     # time of last shot            
+                    
         def update(self):
             self.speedx = 0
             self.speedy = 0
@@ -69,6 +71,12 @@ async def main():
                 self.speedy = 5
             self.rect.x += self.speedx
             self.rect.y += self.speedy
+
+            # Movement for touch
+            if pygame.mouse.get_pressed()[0]:  # Left mouse button or touch
+                mouse_pos = pygame.mouse.get_pos()
+                self.rect.center = mouse_pos
+
             if self.rect.right > WIDTH:
                 self.rect.right = WIDTH
             if self.rect.left < 0:
@@ -77,6 +85,13 @@ async def main():
                 self.rect.bottom = HEIGHT
             if self.rect.top < 0:
                 self.rect.top = 0
+
+            # Shooting for both keyboard and touch
+            if keystate[pygame.K_SPACE] or pygame.mouse.get_pressed()[0]:
+                now = pygame.time.get_ticks()
+                if now - self.last_shoot > self.shoot_delay:
+                    self.last_shoot = now
+                    self.shoot()                
             #self.rect.x += 5
             #self.rect.y += self.y_speed
             #if self.rect.bottom > HEIGHT -200:
@@ -239,9 +254,9 @@ async def main():
                         game_state = "playing"
                         pygame.time.set_timer(pygame.USEREVENT + 1, 0)  # Stop the timer
             # **Modified: Only shoot when playing**                
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and game_state == "playing":
-                    player.shoot()
+            #elif event.type == pygame.KEYDOWN:
+            #    if event.key == pygame.K_SPACE and game_state == "playing":
+            #        player.shoot()
 
         # **Modified: Update only when playing**
         if game_state == "playing":                    
